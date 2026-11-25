@@ -1,35 +1,209 @@
-# ChronoDrift
+# ⚡ ChronoDrift
 
-**ChronoDrift** is a fast-paced, time-bending neon ricochet arena roguelike built in **Unity 6 (`6000.2.0f1`)** with 100% procedural 3D meshes, materials, VFX, UI, and synthesized audio.
+> **Fast-paced time-bending neon ricochet arena roguelike — Unity 6, 100% procedural.**
 
-## Core Mechanics
+No external assets, no packages, no textures. Every mesh, material, particle, sound effect, and UI element is generated entirely in C# at runtime.
 
-- **WASD** — Thrusters with ship banking & momentum
-- **Mouse Aim + LMB** — Pulse Railgun whose bolts **ricochet off arena walls and pillars**, gaining **+50% damage per bounce**
-- **Spacebar** — Phase-Dash with afterimage ghosts and brief invulnerability
-- **Right Mouse Button (RMB)** — **Gravity Singularity** orb that pulls in enemies, swallows enemy projectiles, and detonates
-- **Shift / E** — **Chrono Focus** slow-motion (`0.26x` time scale) with dynamic pitch shift and energy recharge on kills
+---
 
-## Enemies & Bosses
+## 🎮 Controls
 
-- **Swarmer** — Fast crimson tetrahedron that weaves and flanks
-- **Sniper** — Amber diamond turret with a glowing laser-sight telegraph before firing high-speed plasma lances
-- **Orbiter** — Heavy octahedron guarded by 3 rotating shield plates that deflect straight shots (use wall ricochets, Gravity Singularity, or Arc Lightning!)
-- **Hex-Titan Overlord** — Spawns every 5 waves with Spiral Bullet Hell, Dash Slam, and Radial Nova phases
+| Action | Input |
+|---|---|
+| Thrusters | `WASD` |
+| Aim | `Mouse` |
+| Ricochet Railgun | `LMB (hold)` |
+| Gravity Singularity | `RMB` |
+| Phase-Dash | `Space` |
+| **Black Hole Rift** *(ultimate)* | `Q` |
+| Chrono Focus (slow-mo) | `Shift` / `E` |
+| Pause | `Escape` |
+| Retry after death | `R` |
+| Select Upgrade | `1` / `2` / `3` or click |
 
-## Roguelite Core Upgrades
+---
 
-Between waves, choose 1 of 3 upgrades (`[1]`, `[2]`, `[3]` or click):
-- **Ricochet Mastery** (+2 bounces, +50% damage per bounce)
-- **Twin Prism** (+2 angled split bolts)
-- **Arc Lightning** (bolts chain to nearby enemies)
-- **Overclock Core** (+22% fire rate, +12% damage)
-- **Phase Shockwave** (dashing emits an EMP blast ring)
-- **Void Amplifier** (larger Singularity, +30 damage, faster cooldown)
-- **Orbital Aegis** (+2 rotating shield orbs)
-- **Chrono Siphon** (heal on kill streaks + faster Chrono Energy regen)
+## 🕹️ Core Mechanics
 
-## Opening in Unity
+### Ricochet Railgun
+Bolts fired from your delta-wing ship bounce off arena walls and pillars. **Each bounce deals +50% more damage** and turns the bolt gold. Chain ricochets to destroy shielded Orbiters or score geometry kills.
 
-1. Open `C:\Users\Sajad\Documents\GitHub\ChronoDrift` in **Unity 6 (`6000.2.0f1`)**.
-2. Open `Assets/Scenes/Main.unity` and press **Play** (or run the prebuilt `Builds/ChronoDrift.exe`).
+### Gravity Singularity *(RMB)*
+Deploy a violet orb that **pulls all enemies** toward its center, **swallows incoming enemy fire**, then detonates in a crushing nova. Great for crowd control and projectile absorption.
+
+### Phase-Dash *(Space)*
+Short-range teleport dash with **invulnerability frames** and afterimage ghosts. Upgraded to emit an EMP shockwave ring.
+
+### Black Hole Rift *(Q — 18s cooldown)*
+Your ultimate. Spawns a growing accretion-disc black hole that:
+- Pulls **all enemies** with inverse-square force
+- Swallows **all enemy projectiles** in its gravity well
+- Pulses with rotating neon rings
+- Collapses into a **screen-shaking nova** dealing up to 220 AOE damage
+
+### Chrono Focus *(Shift / E)*
+Drops time to **0.26×** while your Chrono Energy lasts. Music pitch drops. Recharges on kills. Tactical for dodging boss bullet-hell patterns.
+
+---
+
+## 👾 Enemies
+
+| Enemy | Description |
+|---|---|
+| **Swarmer** | Fast crimson tetrahedron. Weaves toward you with sinusoidal flanking. |
+| **Sniper** | Amber diamond turret. Telegraphs with a flashing laser sight, then fires a fast plasma lance. |
+| **Orbiter** | Heavy octahedron with 3 rotating shield plates. Deflects straight shots — use ricochets, Singularity, or Arc Lightning. |
+| **Elite Swarmer** *(Wave 4+)* | Bigger, faster swarmer with **DriftTrail afterimages** and a dash-lunge that emits a shockwave ring. |
+| **MineLayer** *(Wave 4+)* | Slow drone that drops glowing **proximity mines** along its path. Mines detonate on player contact or when shot. |
+| **Hex-Titan Overlord** *(Every 5th wave)* | 3-phase boss with rotating outer ring. Phase 0: triple-arm spiral bullet-hell. Phase 1: telegraph + dash slam + radial nova. |
+
+---
+
+## 🏆 Roguelite Upgrades
+
+After every wave, choose **1 of 3** upgrades from a shuffled pool:
+
+| Upgrade | Effect |
+|---|---|
+| **Ricochet Mastery** | +2 bolt bounces, each worth +50% damage |
+| **Twin Prism** | +2 angled split bolts per primary shot |
+| **Arc Lightning** | Bolts chain electricity to 2 nearby enemies |
+| **Overclock Core** | +22% fire rate, +12% bolt damage |
+| **Phase Shockwave** | Dash emits EMP blast ring |
+| **Void Amplifier** | Larger Singularity, +30 damage, faster cooldown |
+| **Orbital Aegis** | +2 rotating shield orbs (block bullets + damage enemies) |
+| **Chrono Siphon** | Heal on kill streaks + 35% Chrono Energy regen |
+| **Rift Core Overcharge** | Upgrade Black Hole Rift: +radius, +damage, −18% cooldown |
+| **Hull Reinforcement** | +2 max hull points + immediate +1 HP |
+
+---
+
+## 🎖️ Achievement System
+
+Real-time sliding banner achievements:
+
+- **First Blood** — first kill
+- **Triple Kill** / **Killing Spree** — 3 / 5 kills within 2.5 seconds
+- **Combo × 8** / **Combo × 16 MAX** — combo milestones
+- **Untouchable** — clear a wave without taking damage
+- **Speed Demon** — clear a wave in under 18 seconds
+- **Boss Slayer** — defeat the Hex-Titan Overlord
+- **Ricochet Master** — score a kill with a wall-bounced bolt
+- **Event Horizon** — deploy your first Black Hole Rift
+- **Space is Mine** — 5 Black Hole Rifts in one run
+
+---
+
+## 🖥️ Screen Effects
+
+All procedural, zero post-process packages:
+- **Damage Vignette Pulse** — red border flash on player hit
+- **Chromatic Aberration** — RGB fringe on damage
+- **Black Hole Vignette** — slow creeping darkness during Rift
+- **Hit-Stop** — brief time freeze on heavy impacts
+- **Camera Trauma** — Perlin-noise screen shake proportional to impact
+
+---
+
+## 🔊 Procedural Audio
+
+All 12 sound effects synthesized at runtime with C# `AudioClip` generation:
+
+| Sound | Synthesis method |
+|---|---|
+| Railgun | Frequency sweep (880 → 260 Hz, sine) |
+| Ricochet | Upward sweep (pitch-shifts per bounce) |
+| Explosion | Noise sweep (low-pass filtered) |
+| Singularity | Rising sweep (180 → 620 Hz) |
+| Black Hole | Deep descending sweep (320 → 28 Hz) |
+| Upgrade | Cascading minor-seventh chord |
+| Ambient | Synthwave sub-bass pulse loop (A1–D2) — pitch-shifts during Chrono Focus |
+
+---
+
+## 🏗️ Architecture
+
+```
+ChronoDrift/
+├── Assets/
+│   ├── Scenes/
+│   │   └── Main.unity              # Auto-generated by Editor script
+│   └── Scripts/
+│       ├── Audio/
+│       │   └── ProceduralAudio.cs  # Runtime sound synthesizer
+│       ├── Combat/
+│       │   ├── AchievementSystem.cs # Real-time achievement banners
+│       │   ├── BlackHoleRift.cs     # Ultimate ability
+│       │   ├── DamagePopup.cs       # Floating damage numbers
+│       │   ├── DriftTrail.cs        # Ghost afterimage trail
+│       │   ├── GravitySingularity.cs
+│       │   ├── Projectile.cs        # Ricochet railgun bolt
+│       │   ├── ScreenEffects.cs     # Procedural vignette + chromatic aberration
+│       │   └── VfxHelper.cs         # Burst particles + shockwave rings + lightning arcs
+│       ├── Core/
+│       │   ├── CameraController.cs  # Trauma shake + FoV kicks
+│       │   ├── GameManager.cs       # State machine + score/combo
+│       │   ├── MaterialLibrary.cs   # Neon emissive material cache
+│       │   ├── ProceduralMeshFactory.cs  # Ship, tetrahedron, diamond, octahedron meshes
+│       │   └── TimeDilationManager.cs   # Chrono Focus slow-mo + hit-stop
+│       ├── Editor/
+│       │   └── ChronoDriftSetup.cs  # One-click scene builder + Windows exe exporter
+│       ├── Enemies/
+│       │   ├── BossEnemy.cs         # Hex-Titan Overlord (3 phases)
+│       │   ├── EliteEnemy.cs        # Dash-lunge elite with DriftTrail
+│       │   ├── EnemyBase.cs         # Health, knockback, hit-flash, arena clamp
+│       │   ├── MineLayerEnemy.cs    # Drone + ProximityMine class
+│       │   ├── OrbiterEnemy.cs      # Shield-plated heavy
+│       │   ├── SniperEnemy.cs       # Laser-sight telegraph turret
+│       │   └── SwarmerEnemy.cs      # Weaving crimson swarmer
+│       ├── Player/
+│       │   └── PlayerController.cs  # Ship movement, all abilities, orbital shields
+│       ├── Progression/
+│       │   ├── UpgradeSystem.cs     # 11-option roguelite upgrade pool
+│       │   └── WaveManager.cs       # Arena builder + escalating wave spawner
+│       └── UI/
+│           └── GameUI.cs            # Title, HUD, 3-card upgrade, pause, game over
+└── Builds/
+    └── ChronoDrift.exe              # Pre-built Windows executable
+```
+
+---
+
+## 🚀 Getting Started
+
+### Open in Unity
+
+1. Launch **Unity Hub**
+2. Click **Add → Add project from disk** → select `C:\Users\<you>\Documents\Github\ChronoDrift`
+3. Open in **Unity 6 (6000.2.0f1)**
+4. From the menu: **ChronoDrift → Build Main Scene** (builds `Assets/Scenes/Main.unity` automatically)
+5. Press **Play**
+
+### Build Windows Exe
+
+From Unity menu: **ChronoDrift → Build Windows Executable**
+
+Output: `Builds/ChronoDrift.exe`
+
+---
+
+## 🧰 Tech Highlights
+
+- **Zero external assets** — all meshes, materials, particles, audio, and UI are runtime-generated C#
+- **Unity 6 (6000.2.0f1)** built-in render pipeline
+- **Editor automation** (`ChronoDriftSetup.cs`) creates the entire scene and sets build settings with one click
+- **Procedural audio synthesis** — 12 unique sounds generated from sine waves, frequency sweeps, and noise filters
+- **Fully scriptable architecture** — every system is a singleton MonoBehaviour with clean public APIs
+
+---
+
+## 📊 Score & Combo
+
+- Each kill rewards `basePoints × combo` score
+- Combo increments on each kill (max ×16), resets after 3.5s without a kill
+- Chrono Energy recharges 8 units per kill
+- High score persisted with `PlayerPrefs`
+
+---
+
+*Built with ❤️ in Unity 6 — 100% procedural, 0% external assets.*
