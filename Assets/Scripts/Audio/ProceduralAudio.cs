@@ -25,6 +25,8 @@ namespace ChronoDrift.Audio
         private AudioClip _playerHitClip;
         private AudioClip _bossWarningClip;
         private AudioClip _ambientClip;
+        private AudioClip _blackHoleClip;
+        private AudioClip _mineDeployClip;
 
         private void Awake()
         {
@@ -69,6 +71,8 @@ namespace ChronoDrift.Audio
             _playerHitClip = CreateSweepClip("SFX_PlayerHit", 0.25f, 240f, 65f, 0.55f, true);
             _bossWarningClip = CreateSweepClip("SFX_BossWarning", 0.65f, 140f, 95f, 0.5f, true);
             _ambientClip = CreateAmbientPulseClip("Ambient_Synth", 4.0f);
+            _blackHoleClip = CreateSweepClip("SFX_BlackHole", 1.1f, 320f, 28f, 0.72f, false);
+            _mineDeployClip = CreateSweepClip("SFX_MineDeploy", 0.18f, 740f, 1100f, 0.3f, false);
         }
 
         public void PlayShoot() => PlayOneShot(_shootClip, 0.45f, UnityEngine.Random.Range(0.95f, 1.08f));
@@ -80,6 +84,8 @@ namespace ChronoDrift.Audio
         public void PlayUpgrade() => PlayOneShot(_upgradeClip, 0.65f, 1.0f);
         public void PlayPlayerHit() => PlayOneShot(_playerHitClip, 0.8f, 1.0f);
         public void PlayBossWarning() => PlayOneShot(_bossWarningClip, 0.8f, 1.0f);
+        public void PlayBlackHole() => PlayOneShot(_blackHoleClip, 0.85f, 1.0f);
+        public void PlayMineDeploy() => PlayOneShot(_mineDeployClip, 0.4f, UnityEngine.Random.Range(0.9f, 1.1f));
 
         private void PlayOneShot(AudioClip clip, float volume, float pitch)
         {

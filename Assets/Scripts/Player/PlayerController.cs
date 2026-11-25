@@ -9,7 +9,8 @@ namespace ChronoDrift.Player
 {
     /// <summary>
     /// Player delta-wing craft: WASD movement, mouse aim, Ricochet Railgun (LMB),
-    /// Gravity Singularity (RMB), Phase-Dash (Space), and upgradeable Orbital Shields.
+    /// Gravity Singularity (RMB), Phase-Dash (Space), Black Hole Rift (Q),
+    /// Chrono Focus (Shift/E), and upgradeable Orbital Shields.
     /// </summary>
     public class PlayerController : MonoBehaviour
     {
@@ -28,6 +29,7 @@ namespace ChronoDrift.Player
         public float baseDamage = 26f;
         public int baseBounces = 2;
         public float singularityCooldown = 4.5f;
+        public float blackHoleCooldown = 18f;
 
         // Runtime upgrade stats
         public int SplitShotLevel { get; private set; }
@@ -37,6 +39,8 @@ namespace ChronoDrift.Player
         public float VampiricChance { get; private set; }
         public int SingularityUpgradeLevel { get; private set; }
         public int OrbitalShieldCount { get; private set; }
+        public float BlackHoleCooldownNormalized => Mathf.Clamp01(_blackHoleCdTimer / blackHoleCooldown);
+        public int BlackHoleUpgradeLevel { get; private set; }
 
         public int CurrentHealth { get; private set; }
         public float DashCooldownNormalized => Mathf.Clamp01(_dashCdTimer / dashCooldown);
@@ -51,6 +55,7 @@ namespace ChronoDrift.Player
         private Vector3 _dashDir;
         private float _fireTimer;
         private float _singularityCdTimer;
+        private float _blackHoleCdTimer;
         private float _invulnTimer;
         private float _ghostSpawnTimer;
         private int _killHealCounter;
@@ -124,7 +129,9 @@ namespace ChronoDrift.Player
             VampiricChance = 0f;
             SingularityUpgradeLevel = 0;
             OrbitalShieldCount = 0;
+            BlackHoleUpgradeLevel = 0;
             _killHealCounter = 0;
+            _blackHoleCdTimer = 0f;
             RebuildOrbitalShields();
         }
 
@@ -259,6 +266,22 @@ namespace ChronoDrift.Player
                     SingularityUpgradeLevel * 30f
                 );
             }
+
+            // Q — Black Hole Rift (ultimate)
+            if (Input.GetKeyDown(KeyCode.Q) && _blackHoleCdTimer <= 0f)
+            {
+                _blackHoleCdTimer = blackHoleCooldown;
+                BlackHoleRift.Spawn(
+                    transform.position + transform.forward * 2f,
+                    BlackHoleUpgradeLevel * 55f,
+                    BlackHoleUpgradeLevel * 2.5f
+                );
+                AchievementSystem.Instance?.OnBlackHoleActivated();
+                ScreenEffects.Instance?.TriggerBlackHoleVignette();
+                CameraController.Instance?.AddFovKick(6f);
+            }
+
+            _blackHoleCdTimer = Mathf.Max(0f, _blackHoleCdTimer - Time.deltaTime);
         }
 
         private void FirePrimary()
@@ -328,10 +351,16 @@ namespace ChronoDrift.Player
             DamagePopup.Spawn(transform.position, $"-{amount} HP", new Color(1f, 0.3f, 0.35f), 1.2f);
             ProceduralAudio.Instance?.PlayPlayerHit();
 
+            // Screen damage vignette
+            ScreenEffects.Instance?.TriggerDamageVignette(0.9f);
+            ScreenEffects.Instance?.TriggerFlash(new Color(1f, 0.1f, 0.1f), 0.22f);
+            AchievementSystem.Instance?.OnPlayerHit();
+
             if (CurrentHealth <= 0)
             {
                 VfxHelper.SpawnBurst(transform.position, Color.cyan, 36, 14f, 0.32f);
                 GameManager.Instance.TriggerGameOver();
+                AchievementSystem.Instance?.OnRunEnd();
             }
         }
 
@@ -376,6 +405,11 @@ namespace ChronoDrift.Player
         {
             OrbitalShieldCount += 2;
             RebuildOrbitalShields();
+        }
+        public void AddBlackHoleUpgrade()
+        {
+            BlackHoleUpgradeLevel++;
+            blackHoleCooldown = Mathf.Max(8f, blackHoleCooldown * 0.78f);
         }
 
         private void RebuildOrbitalShields()

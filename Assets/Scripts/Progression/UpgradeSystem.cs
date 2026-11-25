@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using ChronoDrift.Combat;
 using ChronoDrift.Core;
 using ChronoDrift.Player;
 
@@ -91,6 +92,27 @@ namespace ChronoDrift.Progression
                         PlayerController.Instance?.AddVampiric();
                         PlayerController.Instance?.Heal(1);
                         TimeDilationManager.Instance?.MultiplyRegen(1.35f);
+                    }
+                },
+                new UpgradeOption
+                {
+                    Id = "blackhole",
+                    Title = "RIFT CORE OVERCHARGE",
+                    Description = "Upgrade Black Hole Rift:\n+Radius, +Damage, -18% Cooldown.",
+                    AccentColor = new Color(0.5f, 0.05f, 1f),
+                    Apply = () => PlayerController.Instance?.AddBlackHoleUpgrade()
+                },
+                new UpgradeOption
+                {
+                    Id = "maxhp",
+                    Title = "HULL REINFORCEMENT",
+                    Description = "+2 Maximum Hull Points.\nRestores +1 HP immediately.",
+                    AccentColor = new Color(0.2f, 1f, 0.5f),
+                    Apply = () =>
+                    {
+                        if (PlayerController.Instance == null) return;
+                        PlayerController.Instance.maxHealth += 2;
+                        PlayerController.Instance.Heal(1);
                     }
                 }
             };

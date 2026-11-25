@@ -30,6 +30,7 @@ namespace ChronoDrift.UI
         private Image _chronoFill;
         private Image _dashCdFill;
         private Image _singularityCdFill;
+        private Image _blackHoleCdFill;
         private Text _waveText;
         private Text _scoreText;
         private Text _comboText;
@@ -83,6 +84,8 @@ namespace ChronoDrift.UI
                 _hpText.text = $"HULL  {player.CurrentHealth} / {player.maxHealth}";
                 _dashCdFill.fillAmount = 1f - player.DashCooldownNormalized;
                 _singularityCdFill.fillAmount = 1f - player.SingularityCooldownNormalized;
+                if (_blackHoleCdFill != null)
+                    _blackHoleCdFill.fillAmount = 1f - player.BlackHoleCooldownNormalized;
             }
 
             if (TimeDilationManager.Instance != null)
@@ -210,12 +213,15 @@ namespace ChronoDrift.UI
             AnchorRight(_comboText.rectTransform);
 
             // Bottom-Left: Ability Cooldowns
-            var botLeft = CreateBox(_hudPanel.transform, "Abilities", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 24f), new Vector2(340f, 64f), new Color(0.04f, 0.06f, 0.11f, 0.72f));
-            CreateText(botLeft.transform, "DASH [SPACE]", 14, new Vector2(14f, -8f), new Vector2(145f, 20f), TextAnchor.MiddleLeft, Color.white);
-            _dashCdFill = CreateBar(botLeft.transform, new Vector2(14f, -34f), new Vector2(145f, 14f), new Color(0.15f, 0.95f, 1f));
+            var botLeft = CreateBox(_hudPanel.transform, "Abilities", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 24f), new Vector2(500f, 64f), new Color(0.04f, 0.06f, 0.11f, 0.72f));
+            CreateText(botLeft.transform, "DASH [SPACE]", 14, new Vector2(14f, -8f), new Vector2(130f, 20f), TextAnchor.MiddleLeft, Color.white);
+            _dashCdFill = CreateBar(botLeft.transform, new Vector2(14f, -34f), new Vector2(130f, 14f), new Color(0.15f, 0.95f, 1f));
 
-            CreateText(botLeft.transform, "SINGULARITY [RMB]", 14, new Vector2(178f, -8f), new Vector2(150f, 20f), TextAnchor.MiddleLeft, new Color(0.85f, 0.65f, 1f));
-            _singularityCdFill = CreateBar(botLeft.transform, new Vector2(178f, -34f), new Vector2(148f, 14f), new Color(0.75f, 0.35f, 1f));
+            CreateText(botLeft.transform, "SINGULARITY [RMB]", 14, new Vector2(160f, -8f), new Vector2(140f, 20f), TextAnchor.MiddleLeft, new Color(0.85f, 0.65f, 1f));
+            _singularityCdFill = CreateBar(botLeft.transform, new Vector2(160f, -34f), new Vector2(135f, 14f), new Color(0.75f, 0.35f, 1f));
+
+            CreateText(botLeft.transform, "RIFT [Q]", 14, new Vector2(312f, -8f), new Vector2(100f, 20f), TextAnchor.MiddleLeft, new Color(0.55f, 0.15f, 1f));
+            _blackHoleCdFill = CreateBar(botLeft.transform, new Vector2(312f, -34f), new Vector2(165f, 14f), new Color(0.45f, 0.05f, 1f));
 
             // Top-Center: Boss Health Bar
             _bossBarRoot = CreateBox(_hudPanel.transform, "BossBar", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(600f, 54f), new Color(0.08f, 0.02f, 0.06f, 0.85f));
@@ -237,8 +243,8 @@ namespace ChronoDrift.UI
 
             var controls = CreateText(_titlePanel.transform,
                 "WASD: Thrusters   |   MOUSE: Aim & Railgun (Wall Ricochets = +50% DMG)\n" +
-                "SPACE: Phase-Dash   |   RMB: Gravity Singularity   |   SHIFT / E: Chrono Slow-Mo",
-                20, new Vector2(0f, 10f), new Vector2(920f, 80f), TextAnchor.MiddleCenter, new Color(0.85f, 0.9f, 0.95f));
+                "SPACE: Phase-Dash   |   RMB: Gravity Singularity   |   Q: Black Hole Rift   |   SHIFT/E: Chrono Slow-Mo",
+                20, new Vector2(0f, 10f), new Vector2(1050f, 80f), TextAnchor.MiddleCenter, new Color(0.85f, 0.9f, 0.95f));
             Center(controls.rectTransform);
 
             _titleHighScoreText = CreateText(_titlePanel.transform, "BEST SCORE: 0", 22, new Vector2(0f, -65f), new Vector2(500f, 36f), TextAnchor.MiddleCenter, new Color(1f, 0.85f, 0.25f));

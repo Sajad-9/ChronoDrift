@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using ChronoDrift.Audio;
+using ChronoDrift.Combat;
 using ChronoDrift.Core;
 using ChronoDrift.Player;
 using ChronoDrift.Progression;
@@ -81,6 +82,10 @@ namespace ChronoDrift.Editor
             sysGo.AddComponent<WaveManager>();
             sysGo.AddComponent<ProceduralAudio>();
             sysGo.AddComponent<GameUI>();
+            sysGo.AddComponent<AchievementSystem>();
+
+            // Screen Effects on Camera
+            camGo.AddComponent<ScreenEffects>();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[]

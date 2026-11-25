@@ -115,6 +115,7 @@ namespace ChronoDrift.Progression
         public void StartNextWave()
         {
             CurrentWave++;
+            AchievementSystem.Instance?.OnWaveStart(CurrentWave);
             StartCoroutine(SpawnWaveRoutine(CurrentWave));
         }
 
@@ -147,9 +148,13 @@ namespace ChronoDrift.Progression
 
                 EnemyBase enemy;
                 float roll = Random.value;
-                if (wave >= 3 && roll < 0.22f)
+                if (wave >= 4 && roll < 0.14f)
+                    enemy = EliteEnemy.Spawn(spawnPos, wave);
+                else if (wave >= 4 && roll < 0.28f)
+                    enemy = MineLayerEnemy.Spawn(spawnPos, wave);
+                else if (wave >= 3 && roll < 0.42f)
                     enemy = OrbiterEnemy.Spawn(spawnPos, wave);
-                else if (wave >= 2 && roll < 0.52f)
+                else if (wave >= 2 && roll < 0.65f)
                     enemy = SniperEnemy.Spawn(spawnPos, wave);
                 else
                     enemy = SwarmerEnemy.Spawn(spawnPos, wave);
@@ -175,10 +180,18 @@ namespace ChronoDrift.Progression
         public void NotifyEnemyKilled(EnemyBase enemy)
         {
             _aliveEnemies.Remove(enemy);
-            if (enemy == ActiveBoss) ActiveBoss = null;
+            bool wasBoss = (enemy == ActiveBoss);
+            if (wasBoss)
+            {
+                ActiveBoss = null;
+                AchievementSystem.Instance?.OnBossKilled();
+            }
+
+            AchievementSystem.Instance?.OnKill();
 
             if (!_spawningWave && _aliveEnemies.Count == 0 && GameManager.Instance.State == GameState.Playing)
             {
+                AchievementSystem.Instance?.OnWaveComplete(CurrentWave);
                 StartCoroutine(WaveClearedRoutine());
             }
         }
