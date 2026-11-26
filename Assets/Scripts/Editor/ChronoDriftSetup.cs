@@ -34,6 +34,13 @@ namespace ChronoDrift.Editor
         public static void BuildScene()
         {
             EnsureTags(new[] { "Wall", "Obstacle", "EnemyShield" });
+            EnsureAlwaysIncludedShaders(new[]
+            {
+                "Standard",
+                "Sprites/Default",
+                "Particles/Standard Unlit",
+                "UI/Default"
+            });
 
             if (!Directory.Exists("Assets/Scenes"))
                 Directory.CreateDirectory("Assets/Scenes");
@@ -148,6 +155,40 @@ namespace ChronoDrift.Editor
                 {
                     tagsProp.InsertArrayElementAtIndex(tagsProp.arraySize);
                     tagsProp.GetArrayElementAtIndex(tagsProp.arraySize - 1).stringValue = tag;
+                }
+            }
+
+            so.ApplyModifiedProperties();
+            AssetDatabase.SaveAssets();
+        }
+
+        private static void EnsureAlwaysIncludedShaders(string[] shaderNames)
+        {
+            var graphicsAsset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset");
+            if (graphicsAsset == null || graphicsAsset.Length == 0) return;
+
+            var so = new SerializedObject(graphicsAsset[0]);
+            var shadersProp = so.FindProperty("m_AlwaysIncludedShaders");
+
+            foreach (string shaderName in shaderNames)
+            {
+                Shader shader = Shader.Find(shaderName);
+                if (shader == null) continue;
+
+                bool exists = false;
+                for (int i = 0; i < shadersProp.arraySize; i++)
+                {
+                    if (shadersProp.GetArrayElementAtIndex(i).objectReferenceValue == shader)
+                    {
+                        exists = true;
+                        break;
+                    }
+                }
+
+                if (!exists)
+                {
+                    shadersProp.InsertArrayElementAtIndex(shadersProp.arraySize);
+                    shadersProp.GetArrayElementAtIndex(shadersProp.arraySize - 1).objectReferenceValue = shader;
                 }
             }
 
