@@ -107,6 +107,10 @@ namespace ChronoDrift.Progression
                 Destroy(proj.gameObject);
             foreach (var sing in FindObjectsByType<GravitySingularity>(FindObjectsSortMode.None))
                 Destroy(sing.gameObject);
+            foreach (var rift in FindObjectsByType<BlackHoleRift>(FindObjectsSortMode.None))
+                Destroy(rift.gameObject);
+            foreach (var mine in FindObjectsByType<ProximityMine>(FindObjectsSortMode.None))
+                Destroy(mine.gameObject);
 
             CurrentWave = 0;
             StartNextWave();

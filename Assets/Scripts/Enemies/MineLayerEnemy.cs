@@ -133,13 +133,14 @@ namespace ChronoDrift.Enemies
                 if (dist <= _triggerRadius) Detonate(true);
             }
 
-            // Check if hit by player projectile (simple sphere overlap)
-            Collider[] hits = Physics.OverlapSphere(transform.position, 0.52f);
-            foreach (var c in hits)
+            // Check if hit by player projectile via active registry
+            for (int i = Projectile.ActiveProjectiles.Count - 1; i >= 0; i--)
             {
-                var proj = c.GetComponent<Projectile>();
-                if (proj != null && proj.isPlayerProjectile)
+                var proj = Projectile.ActiveProjectiles[i];
+                if (proj != null && proj.isPlayerProjectile &&
+                    (proj.transform.position - transform.position).sqrMagnitude <= 0.45f)
                 {
+                    Destroy(proj.gameObject);
                     Detonate(false);
                     return;
                 }

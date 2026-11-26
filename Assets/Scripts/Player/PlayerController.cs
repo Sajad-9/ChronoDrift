@@ -61,6 +61,7 @@ namespace ChronoDrift.Player
         private int _killHealCounter;
 
         private readonly List<Transform> _orbitalShields = new List<Transform>();
+        private readonly Collider[] _obstacleBuffer = new Collider[12];
         private float _orbitalAngle;
 
         private void Awake()
@@ -232,11 +233,12 @@ namespace ChronoDrift.Player
             nextPos.z = Mathf.Clamp(nextPos.z, -18.5f, 18.5f);
             nextPos.y = 0.6f;
 
-            // Simple obstacle push-out
-            Collider[] overlaps = Physics.OverlapSphere(nextPos, 0.7f);
-            foreach (var c in overlaps)
+            // Simple obstacle push-out (non-alloc)
+            int overlapCount = Physics.OverlapSphereNonAlloc(nextPos, 0.7f, _obstacleBuffer);
+            for (int i = 0; i < overlapCount; i++)
             {
-                if (c.CompareTag("Obstacle"))
+                var c = _obstacleBuffer[i];
+                if (c != null && c.CompareTag("Obstacle"))
                 {
                     Vector3 away = nextPos - c.ClosestPoint(nextPos);
                     away.y = 0f;
@@ -446,25 +448,25 @@ namespace ChronoDrift.Player
                 Vector3 pos = transform.position + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * radius;
                 _orbitalShields[i].position = pos;
 
-                // Damage enemies & block enemy bullets
-                Collider[] cols = Physics.OverlapSphere(pos, 0.55f);
-                foreach (var c in cols)
+                // Damage enemies via active list (zero PhysX alloc)
+                for (int e = EnemyBase.ActiveEnemies.Count - 1; e >= 0; e--)
                 {
-                    var enemy = c.GetComponentInParent<EnemyBase>();
-                    if (enemy != null && enemy.IsAlive)
+                    var enemy = EnemyBase.ActiveEnemies[e];
+                    if (enemy == null || !enemy.IsAlive) continue;
+                    if ((enemy.transform.position - pos).sqrMagnitude < 1.3f)
                     {
                         enemy.TakeDamage(18f * dt * 10f, (enemy.transform.position - transform.position).normalized * 4f, false);
                     }
                 }
             }
 
-            var projectiles = FindObjectsByType<Projectile>(FindObjectsSortMode.None);
-            foreach (var proj in projectiles)
+            for (int p = Projectile.ActiveProjectiles.Count - 1; p >= 0; p--)
             {
-                if (proj.isPlayerProjectile) continue;
+                var proj = Projectile.ActiveProjectiles[p];
+                if (proj == null || proj.isPlayerProjectile) continue;
                 foreach (var orb in _orbitalShields)
                 {
-                    if (Vector3.Distance(proj.transform.position, orb.position) < 0.7f)
+                    if ((proj.transform.position - orb.position).sqrMagnitude < 0.49f)
                     {
                         VfxHelper.SpawnBurst(proj.transform.position, new Color(0.3f, 1f, 0.8f), 5, 5f, 0.14f);
                         Destroy(proj.gameObject);

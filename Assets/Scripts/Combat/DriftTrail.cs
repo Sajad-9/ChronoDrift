@@ -1,47 +1,53 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using ChronoDrift.Core;
 
 namespace ChronoDrift.Combat
 {
     /// <summary>
-    /// DriftTrail — attaches to any enemy or the player and emits stylized
-    /// afterimage ghost clones that fade out. Creates a "speed echo" visual
-    /// without any additional textures or particle systems.
-    /// Call DriftTrail.Attach(transform, color) to add it.
+    /// DriftTrail — emits pooled, zero-allocation afterimage ghost clones using
+    /// a shared material and MaterialPropertyBlock.
     /// </summary>
     public class DriftTrail : MonoBehaviour
     {
-        private struct Ghost
+        private class Ghost
         {
             public GameObject Go;
-            public Renderer   Rend;
-            public float      Life;
-            public float      MaxLife;
+            public Renderer Rend;
+            public float Life;
+            public float MaxLife;
+            public bool Active;
         }
 
-        private readonly List<Ghost> _ghosts = new List<Ghost>();
+        private readonly List<Ghost> _pool = new List<Ghost>();
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
+        private MaterialPropertyBlock _mpb;
+        private Material _sharedMat;
+        private Mesh _sharedMesh;
 
-        private float _spawnInterval  = 0.065f;
-        private float _ghostLifetime  = 0.38f;
-        private Color _color          = Color.cyan;
-        private float _timer          = 0f;
-        private Renderer _sourceRenderer;
-        private bool _enabled         = true;
+        private float _spawnInterval = 0.075f;
+        private float _ghostLifetime = 0.34f;
+        private Color _color = Color.cyan;
+        private float _timer;
+        private bool _enabled = true;
+        private const int MaxPoolSize = 8;
 
-        // ================================================================
         public static DriftTrail Attach(Transform target, Color color,
-            float spawnInterval = 0.065f, float ghostLifetime = 0.38f)
+            float spawnInterval = 0.075f, float ghostLifetime = 0.34f)
         {
             var trail = target.gameObject.AddComponent<DriftTrail>();
-            trail._color         = color;
+            trail._color = color;
             trail._spawnInterval = spawnInterval;
             trail._ghostLifetime = ghostLifetime;
-            trail._sourceRenderer = target.GetComponentInChildren<Renderer>();
+            trail._mpb = new MaterialPropertyBlock();
+            trail._sharedMat = MaterialLibrary.GetGhostMaterial(color);
+
+            var mf = target.GetComponentInChildren<MeshFilter>();
+            trail._sharedMesh = mf != null ? mf.sharedMesh : null;
             return trail;
         }
 
-        // ================================================================
         private void Update()
         {
             if (!_enabled) return;
@@ -53,74 +59,74 @@ namespace ChronoDrift.Combat
                 SpawnGhost();
             }
 
-            // Age and fade ghosts
-            for (int i = _ghosts.Count - 1; i >= 0; i--)
+            for (int i = 0; i < _pool.Count; i++)
             {
-                var g = _ghosts[i];
+                var g = _pool[i];
+                if (!g.Active) continue;
+
                 g.Life -= Time.deltaTime;
                 if (g.Life <= 0f)
                 {
-                    Destroy(g.Go);
-                    _ghosts.RemoveAt(i);
+                    g.Active = false;
+                    g.Go.SetActive(false);
                     continue;
                 }
 
                 float alpha = g.Life / g.MaxLife;
-                if (g.Rend != null)
-                {
-                    Color c = _color;
-                    c.a = alpha * 0.45f;
-                    g.Rend.material.color = c;
-
-                    // shrink slightly as it fades
-                    g.Go.transform.localScale = Vector3.one * (0.9f + alpha * 0.1f);
-                }
-
-                _ghosts[i] = g;
+                Color c = _color;
+                c.a = alpha * 0.42f;
+                _mpb.SetColor(ColorId, c);
+                g.Rend.SetPropertyBlock(_mpb);
+                g.Go.transform.localScale = transform.lossyScale * (0.9f + alpha * 0.1f);
             }
         }
 
         private void SpawnGhost()
         {
-            Mesh mesh = null;
-            if (_sourceRenderer is MeshRenderer mr)
+            if (_sharedMesh == null) return;
+
+            Ghost slot = null;
+            for (int i = 0; i < _pool.Count; i++)
             {
-                var mf = _sourceRenderer.GetComponent<MeshFilter>();
-                if (mf) mesh = mf.sharedMesh;
+                if (!_pool[i].Active)
+                {
+                    slot = _pool[i];
+                    break;
+                }
             }
 
-            if (mesh == null) mesh = Resources.GetBuiltinResource<Mesh>("Sphere.fbx");
-            if (mesh == null) return;
+            if (slot == null)
+            {
+                if (_pool.Count >= MaxPoolSize) return;
+                var go = new GameObject("DriftGhost");
+                var mfr = go.AddComponent<MeshFilter>();
+                mfr.sharedMesh = _sharedMesh;
+                var rend = go.AddComponent<MeshRenderer>();
+                rend.sharedMaterial = _sharedMat;
+                rend.shadowCastingMode = ShadowCastingMode.Off;
+                rend.receiveShadows = false;
 
-            var go = new GameObject("DriftGhost");
-            go.transform.position = transform.position;
-            go.transform.rotation = transform.rotation;
-            go.transform.localScale = transform.lossyScale;
+                slot = new Ghost { Go = go, Rend = rend };
+                _pool.Add(slot);
+            }
 
-            var mfr = go.AddComponent<MeshFilter>();
-            mfr.sharedMesh = mesh;
-
-            var rend = go.AddComponent<MeshRenderer>();
-            Shader s = Shader.Find("Sprites/Default");
-            if (s == null) s = Shader.Find("Standard");
-            var mat = new Material(s);
-            Color c = _color;
-            c.a = 0.4f;
-            mat.color = c;
-            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
-            rend.material = mat;
-
-            _ghosts.Add(new Ghost { Go = go, Rend = rend, Life = _ghostLifetime, MaxLife = _ghostLifetime });
+            slot.Go.transform.SetPositionAndRotation(transform.position, transform.rotation);
+            slot.Go.transform.localScale = transform.lossyScale;
+            slot.Life = _ghostLifetime;
+            slot.MaxLife = _ghostLifetime;
+            slot.Active = true;
+            slot.Go.SetActive(true);
         }
 
         public void SetEnabled(bool val) => _enabled = val;
 
         private void OnDestroy()
         {
-            foreach (var g in _ghosts)
+            for (int i = 0; i < _pool.Count; i++)
             {
-                if (g.Go) Destroy(g.Go);
+                if (_pool[i].Go != null) Destroy(_pool[i].Go);
             }
+            _pool.Clear();
         }
     }
 }

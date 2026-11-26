@@ -41,6 +41,7 @@ namespace ChronoDrift.Core
                 return;
             }
             Instance = this;
+            Application.targetFrameRate = 120;
             HighScore = PlayerPrefs.GetInt(HighScoreKey, 0);
         }
 

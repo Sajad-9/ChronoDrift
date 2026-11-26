@@ -138,25 +138,30 @@ namespace ChronoDrift.Combat
             float pulse = 1f + Mathf.Sin(_elapsed * 22f) * 0.18f;
             if (_coreRenderer) _coreRenderer.transform.localScale = Vector3.one * (0.5f + t * 1.2f) * pulse;
 
-            // Pull enemies every frame
+            // Pull enemies every frame (zero-alloc via static registries)
             float pullForce = Mathf.Lerp(10f, 28f, t);
-            Collider[] hits = Physics.OverlapSphere(transform.position, _pullRadius * eased);
-            foreach (var c in hits)
+            float activeRadius = _pullRadius * eased;
+            float activeRadiusSqr = activeRadius * activeRadius;
+            for (int i = EnemyBase.ActiveEnemies.Count - 1; i >= 0; i--)
             {
-                var enemy = c.GetComponentInParent<EnemyBase>();
-                if (enemy != null && enemy.IsAlive)
+                var enemy = EnemyBase.ActiveEnemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+                Vector3 pull = transform.position - enemy.transform.position;
+                pull.y = 0f;
+                float sqr = pull.sqrMagnitude;
+                if (sqr <= activeRadiusSqr)
                 {
-                    Vector3 pull = (transform.position - enemy.transform.position);
-                    pull.y = 0f;
-                    float dist = Mathf.Max(0.5f, pull.magnitude);
-                    enemy.ApplyExternalPull(pull.normalized * (pullForce / dist * Time.deltaTime));
+                    float dist = Mathf.Max(0.5f, Mathf.Sqrt(sqr));
+                    enemy.ApplyExternalPull((pull / dist) * (pullForce / dist * Time.deltaTime));
                 }
+            }
 
-                // Swallow enemy bullets
-                var proj = c.GetComponent<Projectile>();
-                if (proj != null && !proj.isPlayerProjectile)
+            for (int i = Projectile.ActiveProjectiles.Count - 1; i >= 0; i--)
+            {
+                var proj = Projectile.ActiveProjectiles[i];
+                if (proj == null || proj.isPlayerProjectile) continue;
+                if ((proj.transform.position - transform.position).sqrMagnitude <= activeRadiusSqr)
                 {
-                    VfxHelper.SpawnBurst(proj.transform.position, new Color(0.6f, 0.1f, 1f), 4, 4f, 0.1f);
                     Destroy(proj.gameObject);
                 }
             }

@@ -61,24 +61,26 @@ namespace ChronoDrift.Combat
             float pulse = 0.95f + Mathf.Sin(_elapsed * 18f) * 0.15f + t * 0.35f;
             transform.localScale = Vector3.one * pulse;
 
-            // Pull enemies & swallow enemy projectiles
-            Collider[] cols = Physics.OverlapSphere(transform.position, _pullRadius);
-            foreach (var c in cols)
+            // Pull enemies & swallow enemy projectiles (zero-alloc via static registries)
+            float pullRadiusSqr = _pullRadius * _pullRadius;
+            for (int i = EnemyBase.ActiveEnemies.Count - 1; i >= 0; i--)
             {
-                var enemy = c.GetComponentInParent<EnemyBase>();
-                if (enemy != null && enemy.IsAlive)
+                var enemy = EnemyBase.ActiveEnemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+                Vector3 pull = transform.position - enemy.transform.position;
+                pull.y = 0f;
+                if (pull.sqrMagnitude <= pullRadiusSqr && pull.sqrMagnitude > 0.001f)
                 {
-                    Vector3 pull = (transform.position - enemy.transform.position);
-                    pull.y = 0f;
                     enemy.ApplyExternalPull(pull.normalized * (14f * Time.deltaTime));
                 }
             }
 
-            // Swallow nearby enemy bullets
-            var projectiles = FindObjectsByType<Projectile>(FindObjectsSortMode.None);
-            foreach (var proj in projectiles)
+            float swallowRadiusSqr = (_pullRadius * 0.7f) * (_pullRadius * 0.7f);
+            for (int i = Projectile.ActiveProjectiles.Count - 1; i >= 0; i--)
             {
-                if (!proj.isPlayerProjectile && Vector3.Distance(proj.transform.position, transform.position) < _pullRadius * 0.7f)
+                var proj = Projectile.ActiveProjectiles[i];
+                if (proj == null || proj.isPlayerProjectile) continue;
+                if ((proj.transform.position - transform.position).sqrMagnitude < swallowRadiusSqr)
                 {
                     VfxHelper.SpawnBurst(proj.transform.position, new Color(0.75f, 0.4f, 1f), 4, 4f, 0.12f);
                     Destroy(proj.gameObject);

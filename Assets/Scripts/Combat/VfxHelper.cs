@@ -9,6 +9,11 @@ namespace ChronoDrift.Combat
     /// </summary>
     public static class VfxHelper
     {
+        private static readonly AnimationCurve SizeFadeCurve = new AnimationCurve(
+            new Keyframe(0f, 1f),
+            new Keyframe(1f, 0f)
+        );
+
         public static void SpawnBurst(Vector3 pos, Color color, int count = 16, float speed = 9f, float size = 0.22f)
         {
             var go = new GameObject("VfxBurst");
@@ -36,13 +41,12 @@ namespace ChronoDrift.Combat
 
             var sizeOverLife = ps.sizeOverLifetime;
             sizeOverLife.enabled = true;
-            sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
-                new Keyframe(0f, 1f),
-                new Keyframe(1f, 0f)
-            ));
+            sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f, SizeFadeCurve);
 
             var renderer = go.GetComponent<ParticleSystemRenderer>();
             renderer.material = MaterialLibrary.GetParticleMaterial();
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
 
             Object.Destroy(go, 1.2f);
         }

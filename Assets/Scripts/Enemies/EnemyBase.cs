@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using ChronoDrift.Audio;
 using ChronoDrift.Combat;
@@ -12,6 +13,8 @@ namespace ChronoDrift.Enemies
     /// </summary>
     public abstract class EnemyBase : MonoBehaviour
     {
+        public static readonly List<EnemyBase> ActiveEnemies = new List<EnemyBase>();
+
         public float maxHp = 40f;
         public int scoreValue = 100;
         public float contactDamageInterval = 0.6f;
@@ -32,6 +35,17 @@ namespace ChronoDrift.Enemies
         {
             CurrentHp = maxHp;
             _hitFlashMat = MaterialLibrary.GetEmissive("EnemyHitFlash", Color.white, Color.white, 3.2f);
+        }
+
+        protected virtual void OnEnable()
+        {
+            if (!ActiveEnemies.Contains(this))
+                ActiveEnemies.Add(this);
+        }
+
+        protected virtual void OnDisable()
+        {
+            ActiveEnemies.Remove(this);
         }
 
         protected virtual void Start()

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using ChronoDrift.Audio;
 using ChronoDrift.Core;
 using ChronoDrift.Enemies;
@@ -11,6 +13,8 @@ namespace ChronoDrift.Combat
     /// </summary>
     public class Projectile : MonoBehaviour
     {
+        public static readonly List<Projectile> ActiveProjectiles = new List<Projectile>();
+
         public bool isPlayerProjectile = true;
         public float speed = 30f;
         public float damage = 25f;
@@ -22,6 +26,17 @@ namespace ChronoDrift.Combat
         private int _bounceCount;
         private TrailRenderer _trail;
         private Renderer _renderer;
+
+        private void OnEnable()
+        {
+            if (!ActiveProjectiles.Contains(this))
+                ActiveProjectiles.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            ActiveProjectiles.Remove(this);
+        }
 
         public static Projectile Spawn(
             Vector3 position,
@@ -55,6 +70,8 @@ namespace ChronoDrift.Combat
 
             var rend = go.GetComponent<Renderer>();
             rend.material = MaterialLibrary.GetEmissive(isPlayer ? "PlayerBoltMat" : "EnemyBoltMat", color, color, 2.5f);
+            rend.shadowCastingMode = ShadowCastingMode.Off;
+            rend.receiveShadows = false;
             proj._renderer = rend;
 
             var trail = go.AddComponent<TrailRenderer>();
